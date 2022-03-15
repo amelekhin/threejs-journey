@@ -2,6 +2,10 @@
 
 This is my walkthrough of the [Three.js Journey](https://threejs-journey.com/) course by Bruno Simon.
 
+## Demo
+
+You can access the demo [here](https://amelekhin-threejs-journey.netlify.app/).
+
 ## Project setup
 
 Install dependencies:
