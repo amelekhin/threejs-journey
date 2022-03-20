@@ -1,5 +1,5 @@
 import { AxesHelper, BoxGeometry, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
-
+import { debounce } from './util/debounce';
 import './style.css';
 
 function getCanvas(): HTMLCanvasElement {
@@ -87,8 +87,7 @@ function main(): void {
   const renderer = new WebGLRenderer({ canvas: getCanvas() });
   renderer.setSize(...getFullscreenSize());
 
-  // Update canvas and camera parameters on resize
-  window.addEventListener('resize', () => {
+  const resizeHandler = debounce(() => {
     setCanvasSize();
 
     camera.aspect = getAspectRatio();
@@ -96,7 +95,10 @@ function main(): void {
 
     renderer.setSize(...getFullscreenSize());
     renderer.render(scene, camera);
-  });
+  }, 250);
+
+  // Update canvas and camera parameters on resize
+  window.addEventListener('resize', resizeHandler);
 
   function animate(): void {
     requestAnimationFrame(animate);
