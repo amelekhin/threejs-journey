@@ -1,35 +1,18 @@
-import { AxesHelper, BoxGeometry, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { 
+  AxesHelper, 
+  BoxGeometry, 
+  Clock, 
+  Group, 
+  Mesh, 
+  MeshBasicMaterial, 
+  PerspectiveCamera,
+  Scene,
+  WebGLRenderer,
+} from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { debounce } from './util/debounce';
+import { getCanvas, getFullscreenSize, getAspectRatio, setCanvasSize } from './util/viewport';
 import './style.css';
-
-function getCanvas(): HTMLCanvasElement {
-  const canvas = document.getElementById('canvas');
-
-  if (!canvas) {
-    throw new Error('Cannot initialize canvas');
-  }
-
-  return canvas as HTMLCanvasElement;
-}
-
-function getFullscreenSize(): [width: number, height: number] {
-  return [document.body.offsetWidth, document.body.offsetHeight];
-}
-
-function setCanvasSize(): void {
-  const canvas = getCanvas();
-  const [width, height] = getFullscreenSize();
-
-  canvas.width = width;
-  canvas.height = height;
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-}
-
-function getAspectRatio(): number {
-  const [width, height] = getFullscreenSize();
-  return width / height;
-}
 
 function main(): void {
   const scene = new Scene();
@@ -40,18 +23,20 @@ function main(): void {
   const mesh = new Mesh(geometry, material);
 
   // Positioning via .set method of Vector3
-  mesh.position.set(0.7, -0.6, 1);
+  // mesh.position.set(0.7, -0.6, 1);
+  mesh.position.set(0, 0, 0);
 
   // Scale is also Vector3, and each axis can be configured separately
-  mesh.scale.x = 0.5;
-  mesh.scale.z = 0.5;
+  // mesh.scale.x = 0.5;
+  // mesh.scale.z = 0.5;
+  // mesh.scale.set(0.5, 0.5, 0.5);
 
   // Rotation is an instance of THREE.Euler. x, y and z represent angles of x, y and z axes in radians.
   // Default is 0. 
   // Rotations are applied x->y->z. By calling obj.rotation.reorder('yxz') this order can be changed.
   // Quaternions can be used to resolve issues related to the order of rotations.
-  mesh.rotation.x = Math.PI * 0.25;
-  mesh.rotation.y = Math.PI * 0.25;
+  // mesh.rotation.x = Math.PI * 0.25;
+  // mesh.rotation.y = Math.PI * 0.25;
 
   scene.add(mesh);
 
@@ -59,8 +44,8 @@ function main(): void {
   setCanvasSize();
 
   // Add a camera of 75 degrees FOV
-  const camera = new PerspectiveCamera(75, getAspectRatio());
-  camera.position.set(1, 1, 3);
+  const camera = new PerspectiveCamera(75, getAspectRatio(), 0.1, 1000);
+  camera.position.set(0, 0, 3);
 
   // .lookAt can be used to direct a camera to a position.
   camera.lookAt(mesh.position);
@@ -80,8 +65,8 @@ function main(): void {
   cube2.position.x -= 2;
   cube3.position.x -= 2.75;
 
-  group.add(cube1, cube2, cube3);
-  scene.add(group);
+  // group.add(cube1, cube2, cube3);
+  // scene.add(group);
 
   // Create a renderer
   const renderer = new WebGLRenderer({ canvas: getCanvas() });
@@ -89,8 +74,7 @@ function main(): void {
 
   const resizeHandler = debounce(() => {
     setCanvasSize();
-
-    camera.aspect = getAspectRatio();
+ 
     camera.updateProjectionMatrix();
 
     renderer.setSize(...getFullscreenSize());
@@ -100,13 +84,21 @@ function main(): void {
   // Update canvas and camera parameters on resize
   window.addEventListener('resize', resizeHandler);
 
+  // Controls
+  const controls = new OrbitControls(camera, document.body);
+  controls.target = scene.position;
+  controls.enableDamping = true;
+
+  const clock = new Clock();
+
   function animate(): void {
     requestAnimationFrame(animate);
 
-    mesh.rotation.z += Math.PI * 0.005;
+    const elapsedTime = clock.getElapsedTime();
+    controls.update();
 
     // Geometric transformations are applied to the whole group
-    group.rotation.y += 0.01;
+    group.rotation.y = elapsedTime * Math.PI;
 
     renderer.render(scene, camera);
   }
