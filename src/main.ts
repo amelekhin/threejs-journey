@@ -69,16 +69,19 @@ function main(): void {
   // scene.add(group);
 
   // Create a renderer
-  const renderer = new WebGLRenderer({ canvas: getCanvas() });
+  const canvas = getCanvas();
+  const renderer = new WebGLRenderer({ canvas, antialias: true });
   renderer.setSize(...getFullscreenSize());
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const resizeHandler = debounce(() => {
     setCanvasSize();
  
+    camera.aspect = getAspectRatio();
     camera.updateProjectionMatrix();
 
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(...getFullscreenSize());
-    renderer.render(scene, camera);
   }, 250);
 
   // Update canvas and camera parameters on resize
@@ -88,6 +91,15 @@ function main(): void {
   const controls = new OrbitControls(camera, document.body);
   controls.target = scene.position;
   controls.enableDamping = true;
+
+  // Fullscreen
+  window.addEventListener('dblclick', async () => {
+    if (!document.fullscreenElement) {
+      await document.body.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  });
 
   const clock = new Clock();
 
