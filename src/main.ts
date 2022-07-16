@@ -10,16 +10,29 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as lil from 'lil-gui';
 import { debounce } from './util/debounce';
 import { getCanvas, getFullscreenSize, getAspectRatio, setCanvasSize } from './util/viewport';
 import './style.css';
 
 function main(): void {
+  const gui = new lil.GUI();
+  
+  const parameters = {
+    color: 0xff0000,
+  };
+
+  gui
+    .addColor(parameters, 'color')
+    .onChange((nextColor: number) => {
+      material.color.set(nextColor);
+    });
+
   const scene = new Scene();
 
   // Create a red cube
   const geometry = new BoxGeometry(1, 1, 1);
-  const material = new MeshBasicMaterial({ color: 0xff0000 });
+  const material = new MeshBasicMaterial({ color: parameters.color });
   const mesh = new Mesh(geometry, material);
 
   // Positioning via .set method of Vector3
@@ -39,6 +52,19 @@ function main(): void {
   // mesh.rotation.y = Math.PI * 0.25;
 
   scene.add(mesh);
+
+  gui
+    .add(mesh.position, 'y')
+    .min(-3)
+    .max(3)
+    .step(0.1)
+    .name('red cube y');
+
+  gui
+    .add(mesh, 'visible');
+
+  gui
+    .add(material, 'wireframe');
 
   // Update initial size of canvas
   setCanvasSize();
@@ -88,7 +114,7 @@ function main(): void {
   window.addEventListener('resize', resizeHandler);
 
   // Controls
-  const controls = new OrbitControls(camera, document.body);
+  const controls = new OrbitControls(camera, getCanvas());
   controls.target = scene.position;
   controls.enableDamping = true;
 
