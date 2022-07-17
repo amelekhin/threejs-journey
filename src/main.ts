@@ -3,10 +3,13 @@ import {
   BoxGeometry, 
   Clock, 
   Group, 
+  LoadingManager, 
   Mesh, 
   MeshBasicMaterial, 
+  NearestFilter, 
   PerspectiveCamera,
   Scene,
+  TextureLoader,
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -16,23 +19,20 @@ import { getCanvas, getFullscreenSize, getAspectRatio, setCanvasSize } from './u
 import './style.css';
 
 function main(): void {
-  const gui = new lil.GUI();
-  
-  const parameters = {
-    color: 0xff0000,
-  };
+  const loadingManager = new LoadingManager();
 
-  gui
-    .addColor(parameters, 'color')
-    .onChange((nextColor: number) => {
-      material.color.set(nextColor);
-    });
+  const textureLoader = new TextureLoader(loadingManager);
+  const colorTexture = textureLoader.load('/textures/minecraft.png');
+  colorTexture.generateMipmaps = false;
+  colorTexture.magFilter = NearestFilter;
+
+  const gui = new lil.GUI();
 
   const scene = new Scene();
 
   // Create a red cube
   const geometry = new BoxGeometry(1, 1, 1);
-  const material = new MeshBasicMaterial({ color: parameters.color });
+  const material = new MeshBasicMaterial({ map: colorTexture });
   const mesh = new Mesh(geometry, material);
 
   // Positioning via .set method of Vector3
@@ -58,7 +58,7 @@ function main(): void {
     .min(-3)
     .max(3)
     .step(0.1)
-    .name('red cube y');
+    .name('cube y');
 
   gui
     .add(mesh, 'visible');
